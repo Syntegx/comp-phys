@@ -36,4 +36,12 @@ y_ana = (y_d.* sinh.(k.*x) .+ y_0.* sinh.(k.*(d.-x))) ./ sinh(k*d) ;
 plot(x,y_num)
 plot!(x,y_ana)
 # Using LU Decomposition the matrix A can found and used to solve the one dimensional Debye-Hueckel equation
-# before implementing LU Decomposition by myself I will use to LinearAlgebra package to have a solution I can compare to
+function LUdecomp(A)
+    n = size(A,1)
+    for i in 1:n #columns of A
+        for j in 1:(i-1)
+            A[[i,j]] = A[[i,j]] - 
+        end
+    end
+    return LU
+end
