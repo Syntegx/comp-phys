@@ -28,20 +28,35 @@ A = SymTridiagonal(zero_N .+ a_ii, zero_N .- 1);
 # using the boundary conditions y_0 and y_d we can solve this system of linear equations using \
 y_0 = -0.5;
 y_d = 0.5;
-b = vcat(y_0,zeros(N-2),y_d);
+b = vcat(y_0, zeros(N - 2), y_d);
 # this results in the numerical solution of the Debye-Hueckel equation(DHE)
-y_num = A\b;
+y_num = A \ b;
 # for comparision we calculate the analytical solution to the DHE
-y_ana = (y_d.* sinh.(k.*x) .+ y_0.* sinh.(k.*(d.-x))) ./ sinh(k*d) ;
-plot(x,y_num)
-plot!(x,y_ana)
-# Using LU Decomposition the matrix A can found and used to solve the one dimensional Debye-Hueckel equation
-function LUdecomp(A)
-    n = size(A,1)
-    for i in 1:n #columns of A
-        for j in 1:(i-1)
-            A[[i,j]] = A[[i,j]] - 
+y_ana = (y_d .* sinh.(k .* x) .+ y_0 .* sinh.(k .* (d .- x))) ./ sinh(k * d);
+plot(x, y_num)
+plot!(x, y_ana)
+# Using LU Decomposition the upper and lower triangular matrices L and U can be found and used to solve the one dimensional Debye-Hueckel equation
+function LUdecomp(matrix, factorize)
+    # first we determine the size nxn of the matrix A
+    n = size(matrix, 1)
+    # here we make sure our matrix contains at least zeros as every element, otherwise the allocation of new values wont work
+    LowerUpper = zeros(n, n) + matrix
+
+    for j in 1:n # we loop over every column 1 to n
+        # since the first row of our linear system contains only terms of trivial nature we can skip the first row
+        for i in j+1:n
+            LowerUpper[i, j] = LowerUpper[i, j] / LowerUpper[j, j]; # since all of the values u_1j are known, theres only a single unknown variables l_n1 in the first column
+            for k in j+1:n # after calculating the unknown values l_n1 we can calculate the next unknown variable u_2m since all others are given 
+                LowerUpper[i, k] = LowerUpper[i, k] - LowerUpper[i, j] * LowerUpper[j, k];
+            end
         end
     end
-    return LU
+    if factorize
+        L = zeros(n,n) + LowerTriangular(LowerUpper)
+        U = zeros(n,n) + UpperTriangular(LowerUpper)
+        return L, U
+    else
+        return LowerUpper
+    end
 end
+L,U = LUdecomp(A, true) 
