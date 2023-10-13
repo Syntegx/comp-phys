@@ -2,7 +2,7 @@ module MyFun
 using LinearAlgebra
 
 # Using LU Decomposition the upper and lower triangular matrices L and U can be found and used to solve the one dimensional Debye-Hueckel equation
-function LUdecomp!(A, factorize)
+function LUdecomp!(A)
     # first we determine the size nxn of the matrix A
     n = size(A, 1)
     A = zeros(n, n) + A
