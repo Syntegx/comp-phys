@@ -1,4 +1,4 @@
-using LinearAlgebra, Plots
+using LinearAlgebra, Plots, BenchmarkTools
 
 e_0 = 16e-20 #elementary charge in coloumb
 epsilon_0 = 885e-23 #permittivity of vacuum in farad per nanometer
@@ -35,28 +35,9 @@ y_num = A \ b;
 y_ana = (y_d .* sinh.(k .* x) .+ y_0 .* sinh.(k .* (d .- x))) ./ sinh(k * d);
 plot(x, y_num)
 plot!(x, y_ana)
-# Using LU Decomposition the upper and lower triangular matrices L and U can be found and used to solve the one dimensional Debye-Hueckel equation
-function LUdecomp(matrix, factorize)
-    # first we determine the size nxn of the matrix A
-    n = size(matrix, 1)
-    # here we make sure our matrix contains at least zeros as every element, otherwise the allocation of new values wont work
-    LowerUpper = zeros(n, n) + matrix
 
-    for j in 1:n # we loop over every column 1 to n
-        # since the first row of our linear system contains only terms of trivial nature we can skip the first row
-        for i in j+1:n
-            LowerUpper[i, j] = LowerUpper[i, j] / LowerUpper[j, j]; # since all of the values u_1j are known, theres only a single unknown variables l_n1 in the first column
-            for k in j+1:n # after calculating the unknown values l_n1 we can calculate the next unknown variable u_2m since all others are given 
-                LowerUpper[i, k] = LowerUpper[i, k] - LowerUpper[i, j] * LowerUpper[j, k];
-            end
-        end
-    end
-    if factorize
-        L = zeros(n,n) + LowerTriangular(LowerUpper)
-        U = zeros(n,n) + UpperTriangular(LowerUpper)
-        return L, U
-    else
-        return LowerUpper
-    end
+function SolveLinSys(A, b)
+LUdecomp!(A, true)
+ForwardSubstitution!(L,b)
+BackwardSubstitution!(U,b)
 end
-L,U = LUdecomp(A, true) 
