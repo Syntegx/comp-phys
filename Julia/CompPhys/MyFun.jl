@@ -22,6 +22,7 @@ end
 
 # forward substitution 
 function ForwardSubstitution!(L, b)
+    L = LowerTriangular(A)
     n = size(b, 1)
     for i in 1:n # loop every row
         for k in 1:i-1 # loop every column except the last one using only indices lower than i
@@ -34,6 +35,7 @@ end
 
 # backwardsubstitution
 function BackwardSubstitution!(U, b)
+    U = UpperTriangular(A)
     n = size(b, 1)
     for i in n:-1:1 # loop every row
         for k in i+1:n # using indices including i and higher than i
