@@ -38,7 +38,7 @@ end
 # backwardsubstitution
 function BackwardSubstitution!(U, b)
     n = size(b, 1)
-    U = zeros(n,n) + LowerTriangular(U)
+    U = zeros(n,n) + UpperTriangular(U)
    
    
     for i in n:-1:1 # loop every row
