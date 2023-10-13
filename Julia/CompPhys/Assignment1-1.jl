@@ -1,4 +1,4 @@
-using LinearAlgebra, Plots, BenchmarkTools
+using .MyFun, LinearAlgebra, Plots, BenchmarkTools
 
 e_0 = 16e-20 #elementary charge in coloumb
 epsilon_0 = 885e-23 #permittivity of vacuum in farad per nanometer
@@ -33,11 +33,7 @@ b = vcat(y_0, zeros(N - 2), y_d);
 y_num = A \ b;
 # for comparision we calculate the analytical solution to the DHE
 y_ana = (y_d .* sinh.(k .* x) .+ y_0 .* sinh.(k .* (d .- x))) ./ sinh(k * d);
-plot(x, y_num)
-plot!(x, y_ana)
-
-function SolveLinSys(A, b)
-LUdecomp!(A, true)
-ForwardSubstitution!(L,b)
-BackwardSubstitution!(U,b)
-end
+plot(x, y_num);
+plot!(x, y_ana);
+@btime MyFun.SolveLinSys(A,b);
+plot!(x,b)

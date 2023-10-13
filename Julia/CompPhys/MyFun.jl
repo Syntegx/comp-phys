@@ -1,5 +1,5 @@
 module MyFun
-
+using LinearAlgebra
 
 # Using LU Decomposition the upper and lower triangular matrices L and U can be found and used to solve the one dimensional Debye-Hueckel equation
 function LUdecomp!(A, factorize)
@@ -16,15 +16,8 @@ function LUdecomp!(A, factorize)
             end
         end
     end
-    # this function stores all information in the original matrix A, we implement an option to output both seperate matrices L and U
-    if factorize
-        L = zeros(n, n) + LowerTriangular(A)
-        U = zeros(n, n) + UpperTriangular(A)
-        L[diagind(L)] .= 1
-        return L, U, A
-    else
-        return A
-    end
+return A
+
 end
 
 # forward substitution 
@@ -53,9 +46,10 @@ end
 
 # function using all other functions created for solving lin equation systems
 function SolveLinSys(A, b)
-    LUdecomp!(A, true)
-    ForwardSubstitution!(L, b)
-    BackwardSubstitution!(U, b)
+    LUdecomp!(A)
+    ForwardSubstitution!(A, b)
+    BackwardSubstitution!(A, b)
+    return b
 end
 
 end
