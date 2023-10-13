@@ -22,10 +22,11 @@ end
 
 # forward substitution 
 function ForwardSubstitution!(L, b)
-    L = LowerTriangular(L)
-    L[diagind(L)].=1
     n = size(b, 1)
-    for i in 1:n # loop every row
+    L = zeros(n,n) + LowerTriangular(L)
+    L[diagind(L)].=1
+
+        for i in 1:n # loop every row
         for k in 1:i-1 # loop every column except the last one using only indices lower than i
             b[i] = b[i] - L[i, k] * b[k]
         end
@@ -36,8 +37,10 @@ end
 
 # backwardsubstitution
 function BackwardSubstitution!(U, b)
-    U = UpperTriangular(U)
     n = size(b, 1)
+    U = zeros(n,n) + LowerTriangular(U)
+   
+   
     for i in n:-1:1 # loop every row
         for k in i+1:n # using indices including i and higher than i
             b[i] = (b[i] - U[i, k] * b[k])

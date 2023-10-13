@@ -14,7 +14,7 @@ d = 100 # the width of the electrolyte solution in nm
 # the inverse Debye length k^2 is a constant defined by following term
 k = sqrt((2 * c_0 * e_0^2) / (epsilon_0 * epsilon_r * k_B * T)) * 1
 # this length is to be divided into a grid of equidistant intervalls N
-N = 1000;
+N = 10;
 # using the distance d between electrodes and the number of intervalls N we can calculate the length of a single intervall h
 h = d / N;
 # x is a vector containing all equidistant steps x_i
