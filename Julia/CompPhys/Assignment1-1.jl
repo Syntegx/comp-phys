@@ -14,7 +14,7 @@ d = 100 # the width of the electrolyte solution in nm
 # the inverse Debye length k^2 is a constant defined by following term
 k = sqrt((2 * c_0 * e_0^2) / (epsilon_0 * epsilon_r * k_B * T)) * 1
 # this length is to be divided into a grid of equidistant intervalls N
-N = 1000;
+N = 100;
 # using the distance d between electrodes and the number of intervalls N we can calculate the length of a single intervall h
 h = d / N;
 # x is a vector containing all equidistant steps x_i
@@ -25,7 +25,7 @@ x = collect(1:1:N) .* h;
 
 zero_N = zeros(N);
 a_ii = k^2 * h^2 + 2;
-A = zeros(N, N) + SymTridiagonal(zero_N .- a_ii, zero_N .+ 1);
+A = zeros(N, N) + SymTridiagonal(zero_N .+ a_ii, zero_N .- 1);
 # using the boundary conditions y_0 and y_d we can solve this system of linear equations using \
 y_0 = -0.5;
 y_d = 0.5;
@@ -37,8 +37,8 @@ function DebyeHueckelFunction(x, y_0=-0.5, y_d=0.5, d=100)
     y_ana = (y_d .* sinh.(k .* x) .+ y_0 .* sinh.(k .* (d .- x))) ./ sinh(k * d)
     return y_ana
 end
-plot(x, y_num);
-plot!(x, DebyeHueckelFunction(x));
+plot(x, y_num)
+plot!(x, DebyeHueckelFunction(x))
 
 # Using LU Decomposition the upper and lower triangular matrices L and U can be found and used to solve the one dimensional Debye-Hueckel equation
 function LUdecomp(A)
@@ -111,7 +111,7 @@ Total_Its = 100;
 Charge_Vec = zeros(Total_Its);
 Cap_Vec = zeros(Total_Its);
 d = collect(LinRange(1, 100, Total_Its))
-y_0 = collect(LinRange(-5, -0.5, Total_Its))
+y_0 = collect(LinRange(-5, -.5, Total_Its))
 
 for j in 1:Total_Its
     local h = d[j] / N
@@ -121,11 +121,11 @@ for j in 1:Total_Its
         local a_ii = k^2 * h^2 + 2
         local A = zeros(N, N) + SymTridiagonal(zero_N .+ a_ii, zero_N .- 1)
         local b = vcat(y_0[i], zeros(N - 2), y_d)
-        SolveLinSys(A, b)
-        Charge_Vec[i] = NegativeTotalCharge(b, k, h)
+        y = SolveLinSys(A, b)
+        Charge_Vec[i] = NegativeTotalCharge(y, k, h)
     end
 
-    Cap_Vec[j] = (Charge_Vec[2] - Charge_Vec[1])
+    Cap_Vec[j] = sum(Charge_Vec ./ y_0) / Total_Its
 end
 plot(y_0, Charge_Vec)
 plot(d, Cap_Vec)
