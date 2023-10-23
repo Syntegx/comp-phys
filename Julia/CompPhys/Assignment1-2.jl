@@ -15,7 +15,7 @@ end
 
 # for the Gauss Seidel Method beeing able to converge, the matrix A has to be diagonally dominant
 # this function checks for diagonal dominance
-function CheckDiagDominance(A::Matrix{Any})
+function CheckDiagDominance(A)
     n = size(A, 1)
     x = zeros(n)
     for i in 1:n
@@ -29,9 +29,10 @@ end
 
 # this function alters the matrix A and vector b by adding a term k to the diagonal elements 
 # this makes sure the Gauss Seidel method converges
-function MakeDiagDominant(A::Matrix{Any}, b::Vector{Any})
+function MakeDiagDominant!(A, b)
     bool = true
     iter = 0
+    k = 0
     while bool
         x = CheckDiagDominance(A)
         if iter > 100000
@@ -39,13 +40,13 @@ function MakeDiagDominant(A::Matrix{Any}, b::Vector{Any})
         elseif any(x .> 0)
             k = maximum(x)
             A[diagind(A)] .+= k
-            b .+= k
+            # b .+= k
         else
             bool = false
         end
         iter += 1
     end
-    A
+    return k
 end
 
 # defining a function with two methods, one for solving a complex system
@@ -123,27 +124,40 @@ function Task_c(first_n::Int64, second_n::Int64, maxitr::Int64)
 end
 
 function Task_d(N, t, E, delta, alpha, beta)
-    A = ring(N, t, E, delta, alpha, beta)
-    G_R = zeros(Complex{Float64}, N, N)
-    B = deepcopy(G_R)
-    B[diagind(B)] .= 1
-    for i in 1:N
-        G_R[:, i] .= IterativeGreenFunction(A, B[:, i])
+    n = length(E)
+    Storage_Struct = []
+    for j in 1:n
+        A = ring(N, t, E[j], delta, alpha, beta)
+        G_R = zeros(Complex{Float64}, N, N)
+        B = deepcopy(G_R)
+        B[diagind(B)] .= 1
+        if any(CheckDiagDominance(A) .> 0)
+            for i in 1:N
+                G_R[:, i] .= IterativeGreenFunction(A, B[:, i])
+            end
+        else
+            for i in 1:N
+                G_R[:, i] .= MyGS(A, B[:, i])
+            end
+        end
+        push!(Storage_Struct,G_R)
     end
-    G_R
+    Storage_Struct
 end
 
-function IterativeGreenFunction(A, b, maxitr=10)
-    
+function IterativeGreenFunction(A, b, maxitr=100000)
+    scale_factor = MakeDiagDominant!(A, b)
     k = 0
+    temp = deepcopy(b)
+    G_p = []
     while k < maxitr
-        G_p = MyGS(A, b)
-        b = G_p
+        G_p = MyGS(A, temp)
+        temp .= b .+ (G_p)
         k += 1
     end
-    b
+    G_p
 end
 
-A = ring(6, -2.6, -6, 0.5, 1, 3);
-b = zeros(Complex{Float64}, 6);
-b[1] = 1
+lol = Task_d(6, -2.6, LinRange(-6,6,10), 0.5, 1, 3)
+
+A = ring(6, -2.6, LinRange(-6,6,10)[2], 0.5, 1, 3)
