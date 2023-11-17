@@ -124,14 +124,14 @@ end
 
 
 function IterativeGreenFunction(A, b, maxitr=30)
-    scale_factor = 5*im
+    scale_factor = 0
     A[diagind(A)].+=scale_factor
     k = 0
     temp = deepcopy(b)
     G_p = zeros(ComplexF64,length(b))
     while k < maxitr
-        #   G_p .= A\temp
-        G_p .= MyGS(A, temp)
+        G_p .= A\temp
+        #  G_p .= MyGS(A, temp)
         temp .= b .+ (scale_factor .* G_p)
         k += 1
     end
@@ -208,7 +208,7 @@ end
 
 
 
-Task_e(6, -2.6, LinRange(-6,6,1000), 0.5, [1,1], [3,4])
+Task_e(6, -2.6, LinRange(-6,6,100), 0.5, [1,1], [3,4])
 # A =ring(6, -2.6,0, 0.5, 1, 3);
 # b=zeros(ComplexF64,6);
 # b[5]=1;

@@ -1,0 +1,4 @@
+name = "MyFunctions"
+uuid = "4874d16f-4631-4180-bcb1-11a3607cab7b"
+authors = ["Constantin Zitta <constantin.zitta@student.tugraz.at>"]
+version = "0.1.0"
