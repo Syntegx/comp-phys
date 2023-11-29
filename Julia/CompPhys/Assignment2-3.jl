@@ -3,13 +3,6 @@ using CSV, DataFrames, LinearAlgebra, MyFunctions, Distances, Plots
 R_0 = Matrix(CSV.read("C:\\Git\\Julia\\comp-phys\\Julia\\Data\\xyzm_dna.txt", DataFrame, header=false, delim=','))
 n = length(R_0[:, 1])
 
-##Task a##
-# function GaussianHesse2(R_0, k=1)
-#     R = Int.(pairwise(SqEuclidean(), R_0, dims=1) .< 5^2)
-#     R .*= (-1)
-#     R[diagind(R)] .= 1
-#     R .*= k
-# end
 
 function GaussianHesse(R_0, k=1)
     n = length(R_0[:, 1])
@@ -21,18 +14,11 @@ function GaussianHesse(R_0, k=1)
     end
     R .*= (-1)
     R[diagind(R)] .= 0
-    R[diagind(R)] .-= sum(R,dims=2)
-    # R .*= k
+    R[diagind(R)] .-= sum(R, dims=2)
     R
 end
-####
-# sum(R_0,dims=2)
-# R2 = GaussianHesse2(R_0)
 
 R = GaussianHesse(R_0)
-
-
-# (R[diagind(R)].==1.0)
 
 function StiffnessMatrix(R_0, R)
     n = length(R_0[:, 1])
@@ -74,6 +60,7 @@ function PMMD(K, limit=length(K[:, 1]))
         push!(x, temp[2])
         MatrixDeflation!(C, temp[2], temp[1])
         k += 1
+        println("Calculating Eigenmode: ", k)
     end
     λ, x
 end
@@ -117,32 +104,18 @@ end
 
 # Plot_DNA([R_0[:,3] R_0[:,1] R_0[:,2]])
 
-# function InverseMatrix(K)
-#     n = length(K[:, 1])
-#     ΔK = 1
-#     p = 0
-#     C = zeros(n, n)
-#     while ΔK > 1e-8 && p < 100
-#         C .+= (-K)^p
-#         ΔK = maximum(abs.(K^p))
-#         p += 1
-#     end
-#     C, p, ΔK
-# end
-
-
 function InverseMatrix(K)
     n = length(K[:, 1])
     ΔK = 1
     p = 0
     C = zeros(n, n)
     k = maximum(abs.(K))
-    while ΔK > 1e-8 
-    p+=1
-    ΔK = k^p
+    while ΔK > 1e-8
+        p += 1
+        ΔK = k^p
     end
     C = sum((-K)^i for i in 0:p)
-    C,p,ΔK
+    C, p, ΔK
 end
 
 temp = Gershgorin(K)
@@ -154,30 +127,45 @@ function WrapperFunction(K, limit)
     tempK .= InverseMatrix(tempK)[1]
     λ = []
     x = []
-    k=0
+    k = 0
     while k < limit
         temp = PowerMethod(tempK)
         push!(λ, temp[1])
         push!(x, temp[2])
-        MatrixDeflation!(tempK,temp[2],temp[1])
+        MatrixDeflation!(tempK, temp[2], temp[1])
         k += 1
-        println("Calculating Eigenmode: ",k)
+        println("Calculating Eigenmode: ", k)
     end
     λ = 1 .- λ
-    λ,x
+    λ, x
 end
 
 # PMMD(Gershgorin(K),10)[1]
 
-tempλ = WrapperFunction(K,10)
-tempλ2 = PMMD(Gershgorin(K),10)
+tempλ = WrapperFunction(K, 10)[2]
+tempλ2 = PMMD(Gershgorin(K), 10)[2]
+function plod()
+    halb = 1:Int(n / 2)-1
+    halb2 = Int(n / 2):n
+    vec = []
+    vec2 = []
+    for i in 1:10
+        push!(vec, tempλ[i][halb])
+    end
+    for i in 1:10
+        push!(vec2, tempλ[i][halb2])
+    end
 
-plt = plot(tempλ[2], layout=(5,2),
-ticks=:none,
-legend=false,
-)
-
-plot(tempλ2[2], layout=(5,2),
-ticks=:none,
-legend=false,
-)
+    plt = scatter(R_0[halb, 3], vec, layout=(5, 2),
+        ticks=:none,
+        legend=false,
+        markersize=2
+    )
+    scatter!(R_0[halb2, 3], vec2, layout=(5, 2),
+        ticks=:none,
+        legend=false,
+        markersize=2
+    )
+    display(plt) 
+end
+plod()

@@ -13,8 +13,8 @@ R = 67.5 * 1e-3
 ## Berechnung der wellenlaenge λ ##
 function U5_1()
 df = CSV.read("C:\\Git\\Julia\\comp-phys\\Julia\\Data\\U5_1.txt", DataFrame, header=1, delim=',')
-Uᵦ = measurement.(df[:,3],df[:,3].*0.05) .* 1e3
-r = measurement.(df[:,1:2],df[:,1:2].*0.05) .* 0.5e-2
+Uᵦ = measurement.(df[:,3],df[:,3].*0.01) .* 1e3
+r = measurement.(df[:,1:2],df[:,1:2].*0.06) .* 0.5e-2
 λ = h ./ sqrt.(2 * m * e .* Uᵦ)
 ## Berechnung der gitterabstaende d ##
 
@@ -63,7 +63,7 @@ I = measurement.(df[:,2],df[:,2].*0.01 .+ 0.003)
 
 H = 33.8*1e2 .*I
 B = μ₀ .* (H)
-Uₐ = measurement.(df[:,3], df[:,3].*0.01) .*1e3
+Uₐ = measurement.(df[:,3], df[:,3].*0.005) .*1e3
 
 linfit = linear_fit(B[1:4],1 ./ r[1:4])
 linfit2 = linear_fit(B[5:end],1 ./r[5:end])
@@ -104,7 +104,7 @@ end
 function U5_3()
 df = CSV.read("C:\\Git\\Julia\\comp-phys\\Julia\\Data\\U5_3.csv", DataFrame, header=1, delim=',')
 I = measurement.(df[:,2],((df[:,2].*0.06 .+ 0.003)))
-ν = measurement.((df[:,1]),(df[:,1].* 0.05)).* 1e6 
+ν = measurement.((df[:,1]),(df[:,1].* 0.01)).* 1e6 
 
 n = 320
 r = 68 * 1e-3
