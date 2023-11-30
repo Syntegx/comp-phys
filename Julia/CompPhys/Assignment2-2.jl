@@ -45,6 +45,7 @@ function Task_d(Datax, Datay, m)
             label="m = $i")
     end
     display(plt)
+    png("linfit")
 end
 
 Task_d(Datax, Datay, 7)
@@ -109,8 +110,11 @@ function Task_eh(Datax, Datay, m)
         label="(1 + c exp(-α⋅t))⁻¹")
 
     display(plt)
+    png("expbasis")
     display(plt2)
+    png("exppara")
     display(plt3)
+    png("expstddiv")
 end
 
 Task_eh(Datax, Datay, 6)
