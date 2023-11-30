@@ -1,16 +1,13 @@
-using CSV, DataFrames, LinearAlgebra, MyFunctions, Distances, Plots
+using CSV, DataFrames, LinearAlgebra, Distances, Plots
+function read_data(Path="C:\\Git\\Julia\\comp-phys\\Julia\\Data\\xyzm_dna.txt")
+    R_0 = Matrix(CSV.read("C:\\Git\\Julia\\comp-phys\\Julia\\Data\\xyzm_dna.txt", DataFrame, header=false, delim=','))
+    n = length(R_0[:, 1])
+    R_0, n
+end
 
-R_0 = Matrix(CSV.read("C:\\Git\\Julia\\comp-phys\\Julia\\Data\\xyzm_dna.txt", DataFrame, header=false, delim=','))
-n = length(R_0[:, 1])
-
-##Task a##
-# function GaussianHesse2(R_0, k=1)
-#     R = Int.(pairwise(SqEuclidean(), R_0, dims=1) .< 5^2)
-#     R .*= (-1)
-#     R[diagind(R)] .= 1
-#     R .*= k
-# end
-
+R_0 = read_data()
+n = R_0[2]
+R_0 = R_0[1]
 function GaussianHesse(R_0, k=1)
     n = length(R_0[:, 1])
     R = zeros(n, n)
@@ -21,7 +18,7 @@ function GaussianHesse(R_0, k=1)
     end
     R .*= (-1)
     R[diagind(R)] .= 0
-    R[diagind(R)] .-= sum(R,dims=2)
+    R[diagind(R)] .-= sum(R, dims=2).-1
     # R .*= k
     R
 end
@@ -137,12 +134,12 @@ function InverseMatrix(K)
     p = 0
     C = zeros(n, n)
     k = maximum(abs.(K))
-    while ΔK > 1e-8 
-    p+=1
-    ΔK = k^p
+    while ΔK > 1e-8
+        p += 1
+        ΔK = k^p
     end
     C = sum((-K)^i for i in 0:p)
-    C,p,ΔK
+    C, p, ΔK
 end
 
 temp = Gershgorin(K)
@@ -154,30 +151,50 @@ function WrapperFunction(K, limit)
     tempK .= InverseMatrix(tempK)[1]
     λ = []
     x = []
-    k=0
+    k = 0
     while k < limit
         temp = PowerMethod(tempK)
         push!(λ, temp[1])
         push!(x, temp[2])
-        MatrixDeflation!(tempK,temp[2],temp[1])
+        MatrixDeflation!(tempK, temp[2], temp[1])
         k += 1
-        println("Calculating Eigenmode: ",k)
+        println("Calculating Eigenmode: $k ")
     end
-    λ = 1 .- λ
-    λ,x
+    # λ = 1 .- λ
+    λ = (1 ./ λ) .- 1
+    λ, x
+end
+macro Name(arg)
+   x = string(arg)
+    quote
+    $x
+    end
 end
 
-# PMMD(Gershgorin(K),10)[1]
+tempλ = WrapperFunction(K, 10)[2]
+tempλ2 = PMMD(Gershgorin(K), 10)[2]
 
-tempλ = WrapperFunction(K,10)
-tempλ2 = PMMD(Gershgorin(K),10)
+half = Int.(1:(n/2))
+half2 = Int.((n/2)+1:n)
+function PlotVector(tempλ, name)
+    p = []
+    for i in eachindex(tempλ)
+        plt = scatter(R_0[half, 3], tempλ[i][half],
+            ticks=:none,
+            legend=true,
+            title="Eigenmode $i",
+            marksize=1)
+        scatter!(plt, R_0[half2, 3], tempλ[i][half2])
+        push!(p, plt)
+    end
+    plt = p
+    plt = plot(plt[1], plt[2], plt[3], plt[4], plt[5], plt[6], plt[7], plt[8], plt[9], plt[10],
+        markersize=8,
+        legend=false,
+        layout=(5, 2),
+        size=(2000, 2000))
+    display(plt)
 
-plt = plot(tempλ[2], layout=(5,2),
-ticks=:none,
-legend=false,
-)
-
-plot(tempλ2[2], layout=(5,2),
-ticks=:none,
-legend=false,
-)
+     png(name)
+end
+PlotVector(tempλ,"Niedrig")
