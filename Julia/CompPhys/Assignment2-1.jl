@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-using Pkg
-# Pkg.add CSV
-# Pkg.add DataFrames
 using CSV, DataFrames, LinearAlgebra, FFTW, TimerOutputs, Plots, WAV, Peaks
 Data = CSV.read("C:\\Git\\Julia\\comp-phys\\Julia\\Data\\single_tone.txt", DataFrame, header=false, ignorerepeated=true, delim=' ')
 ## DISCRETE FOURIER TRANSFORM
@@ -96,23 +92,3 @@ audio_1 = InverseFFTUtilized(Data[:, 1])
 audio_2 = InverseFFTUtilized(Data[:, 2])
 
 wavwrite([audio_1 audio_2], "test.wav", Fs=44100)
-=======
-using CSV, DataFrames, FFTW, BenchmarkTools
-#FOURIER TRANSFORM#
-
-df = CSV.read("E://Julia//comp-phys-1//Julia//Data//single_tone.txt", delim=',', decimal='.', DataFrame, header=false)[1:1000, 2:3];
-
- function FT(df)
-n = length(df[:, 1])
-Y = zeros(ComplexF64, n)
-M = im * 2 * pi .* collect(0:n-1) ./ n
-Y .= sum.(df[:, 1] .* exp.(M * j) for j in 0:n-1)
-T = fft(df[:,1])
-Bool = all(isapprox.(abs.(Y),abs.(T)))
-return Y, Bool
-end
-
-function Task_b()
-    
-end
->>>>>>> 1c2cfdf977ec921c5509003bb0738ab39438ee2e
