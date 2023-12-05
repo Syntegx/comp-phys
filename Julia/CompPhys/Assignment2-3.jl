@@ -19,23 +19,16 @@ function GaussianHesse(R_0, k=1)
     R .*= (-1)
     R[diagind(R)] .= 0
     R[diagind(R)] .-= sum(R, dims=2).-1
-    # R .*= k
     R
 end
 ####
-# sum(R_0,dims=2)
-# R2 = GaussianHesse2(R_0)
-
 R = GaussianHesse(R_0)
-
-
-# (R[diagind(R)].==1.0)
 
 function StiffnessMatrix(R_0, R)
     n = length(R_0[:, 1])
     M = zeros(n, n)
     M[diagind(M)] .= 1 ./ sqrt.(R_0[1:n, 4])
-    M .= M * R * M
+    M .= LinearAlgebra.BLAS.gemm('N','N',LinearAlgebra.BLAS.gemm('N','T',M,R),M)
 end
 
 K = StiffnessMatrix(R_0, R)
@@ -173,7 +166,7 @@ end
 
 tempλ = WrapperFunction(K, 10)[2]
 tempλ2 = PMMD(Gershgorin(K), 10)[2]
-
+plot(tempλ[2])
 half = Int.(1:(n/2))
 half2 = Int.((n/2)+1:n)
 function PlotVector(tempλ, name)
@@ -197,4 +190,5 @@ function PlotVector(tempλ, name)
 
      png(name)
 end
-PlotVector(tempλ,"Niedrig")
+# PlotVector(tempλ,"Niedrig")
+# println(tempλ2)
